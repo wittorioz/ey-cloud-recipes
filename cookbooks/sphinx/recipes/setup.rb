@@ -15,6 +15,8 @@ if util_or_app_server?(node[:sphinx][:utility_name])
     action :nothing
   end
   
+  Chef::Log.info node[:sphinx][:apps].inspect
+  
   node[:sphinx][:apps].each do |app_name|
     # setup monit for each app defined (see attributes)
     template "/etc/monit.d/sphinx_#{app_name}.monitrc" do
@@ -30,7 +32,14 @@ if util_or_app_server?(node[:sphinx][:utility_name])
       })
       notifies :run, resources(:execute => "restart-sphinx")
     end
-  
-    # indexing cron job
+
+    # indexer cron job
+    if node[:sphinx][:frequency].to_i > 0
+      cron "indexer-#{app_name}" do
+        command "/usr/bin/indexer -c /data/#{app_name}/current/config/#{node[:environment][:framework_env]}.sphinx.conf --all --rotate"
+        minute "*/#{node[:sphinx][:frequency]}"
+        user node[:owner_name]
+      end
+    end
   end
 end

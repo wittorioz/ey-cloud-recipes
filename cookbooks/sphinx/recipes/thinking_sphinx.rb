@@ -5,9 +5,10 @@
 
 # setup thinking sphinx on each app (see attributes)
 node[:sphinx][:apps].each do |app_name|
-  # paths
+  # variables
   current_path = "/data/#{app_name}/current"
   shared_path = "/data/#{app_name}/shared"
+  env = node[:environment][:framework_env]
   
   # check that application is deployed
   if File.symlink?(current_path)
@@ -19,7 +20,7 @@ node[:sphinx][:apps].each do |app_name|
       mode "0644"
       backup 0
       variables({
-        :environment => node[:environment][:framework_env],
+        :environment => env,
         :address => node[:utility_instances].find{|i| i[:name] == 'megatron'}[:hostname]
       })
     end
@@ -28,7 +29,7 @@ node[:sphinx][:apps].each do |app_name|
     execute "configure sphinx" do 
       command "bundle exec rake ts:configure"
       user node[:owner_name]
-      environment 'RAILS_ENV' => node[:environment][:framework_env]
+      environment 'RAILS_ENV' => env
       cwd current_path
     end
     
@@ -36,7 +37,7 @@ node[:sphinx][:apps].each do |app_name|
     execute "indexing" do
       command "bundle exec rake ts:index"
       user node[:owner_name]
-      environment 'RAILS_ENV' => node[:environment][:framework_env]
+      environment 'RAILS_ENV' => env
       cwd current_path
     end
   else

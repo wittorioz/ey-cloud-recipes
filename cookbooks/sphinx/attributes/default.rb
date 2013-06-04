@@ -16,9 +16,12 @@ default[:sphinx] = {
   # Applications that are using sphinx. Leave this blank to
   # setup sphinx for each app in an environment
   # :apps => ['todo', 'admin'],
-  :apps => []
+  :apps => [],
+  
+  # Index frequency. How often the indexer cron job should
+  # be run. A value of 15 will reindex every 15 minutes
+  :frequency => 15
 }
-
 
 # set apps key to all available apps if empty
 if default[:sphinx][:apps].empty?
