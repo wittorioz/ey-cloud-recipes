@@ -8,16 +8,14 @@ if util_or_app_server?(node[:sphinx][:utility_name])
   ey_cloud_report "sphinx" do
     message "Setting up sphinx"
   end
-
-  # monit
-  execute "restart-sphinx" do
-    command "monit reload && monit sleep 2s && monit restart sphinx"
-    action :nothing
-  end
-  
-  Chef::Log.info node[:sphinx][:apps].inspect
   
   node[:sphinx][:apps].each do |app_name|
+    # monit
+    execute "restart-sphinx-#{app_name}" do
+      command "monit reload && monit sleep 2s && monit restart sphinx_#{app_name}"
+      action :nothing
+    end
+    
     # setup monit for each app defined (see attributes)
     template "/etc/monit.d/sphinx_#{app_name}.monitrc" do
       source "sphinx.monitrc.erb"
@@ -30,7 +28,7 @@ if util_or_app_server?(node[:sphinx][:utility_name])
         :user => node[:owner_name],
         :app_name => app_name
       })
-      notifies :run, resources(:execute => "restart-sphinx")
+      notifies :run, resources(:execute => "restart-sphinx-#{app_name}")
     end
 
     # indexer cron job
