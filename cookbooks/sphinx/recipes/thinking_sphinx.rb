@@ -13,7 +13,7 @@ node[:sphinx][:apps].each do |app_name|
   # check that application is deployed
   if File.symlink?(current_path)
     # config yml
-    template "/data/roombaby/shared/config/thinking_sphinx.yml" do
+    template "#{shared_path}/config/thinking_sphinx.yml" do
       source "thinking_sphinx.yml.erb"
       owner node[:owner_name]
       group node[:owner_name]
@@ -21,7 +21,8 @@ node[:sphinx][:apps].each do |app_name|
       backup 0
       variables({
         :environment => env,
-        :address => node[:utility_instances].find{|i| i[:name] == 'megatron'}[:hostname]
+        :address => node[:sphinx][:node][:private_hostname],
+        :pid_file => "#{shared_path}/log/#{node[:environment][:framework_env]}.sphinx.pid"
       })
     end
     

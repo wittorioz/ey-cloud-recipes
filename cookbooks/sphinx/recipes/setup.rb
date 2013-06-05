@@ -12,7 +12,7 @@ if util_or_app_server?(node[:sphinx][:utility_name])
   node[:sphinx][:apps].each do |app_name|
     # monit
     execute "restart-sphinx-#{app_name}" do
-      command "monit reload && monit sleep 2s && monit restart sphinx_#{app_name}"
+      command "monit reload && sleep 2s && monit restart sphinx_#{app_name}"
       action :nothing
     end
     
@@ -26,6 +26,7 @@ if util_or_app_server?(node[:sphinx][:utility_name])
       variables({
         :environment => node[:environment][:framework_env],
         :user => node[:owner_name],
+        :pid_file => "/data/#{app_name}/shared/log/#{node[:environment][:framework_env]}.sphinx.pid",
         :app_name => app_name
       })
       notifies :run, resources(:execute => "restart-sphinx-#{app_name}")

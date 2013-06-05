@@ -23,7 +23,20 @@ default[:sphinx] = {
   :frequency => 15
 }
 
-# set apps key to all available apps if empty
+# Note: You do not need to edit below this line
+
+# Store sphinx node as attribute
+if has_util?(default[:sphinx][:utility_name])
+  default[:sphinx][:node] = node[:engineyard][:environment][:instances].find do |instance| 
+    instance[:role][/util/] && instance[:name][default[:sphinx][:utility_name]]
+  end
+else
+  default[:sphinx][:node] = node[:engineyard][:environment][:instances].find do |instance|
+    instance[:role][/app_master|solo/]
+  end
+end
+
+# Set apps key to all available apps if empty
 if default[:sphinx][:apps].empty?
   default[:sphinx][:apps] = node[:engineyard][:environment][:apps].map{|a| a[:name]}
 end
